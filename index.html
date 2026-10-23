@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Record Management System</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px #00000015;
+    }
+
+    h1 {
+      color: #1d4ed8;
+      text-align: center;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      background: #dc2626;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #dbeafe;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Student Record Management System</h1>
+    <p>Add and manage student details below.</p>
+
+    <form id="studentForm">
+      <input id="name" placeholder="Student Name" required>
+      <input id="roll" placeholder="Roll Number" required>
+      <input id="course" placeholder="Course Name" required>
+      <button type="submit">Add Student</button>
+    </form>
+
+    <input id="search" placeholder="Search by name or roll number">
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Roll Number</th>
+          <th>Course</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="studentList"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let students = JSON.parse(
+      localStorage.getItem("students") || "[]"
+    );
+
+    const form = document.getElementById("studentForm");
+    const list = document.getElementById("studentList");
+    const search = document.getElementById("search");
+
+    function saveStudents() {
+      localStorage.setItem("students", JSON.stringify(students));
+    }
+
+    function displayStudents() {
+      list.replaceChildren();
+
+      const keyword = search.value.toLowerCase();
+
+      students.forEach(function(student, index) {
+        if (
+          !student.name.toLowerCase().includes(keyword) &&
+          !student.roll.toLowerCase().includes(keyword)
+        ) return;
+
+        const row = document.createElement("tr");
+
+        [student.name, student.roll, student.course].forEach(function(value) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+
+        const actionCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete-btn";
+
+        deleteButton.onclick = function() {
+          students.splice(index, 1);
+          saveStudents();
+          displayStudents();
+        };
+
+        actionCell.appendChild(deleteButton);
+        row.appendChild(actionCell);
+        list.appendChild(row);
+      });
+    }
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const roll = document.getElementById("roll").value.trim();
+      const course = document.getElementById("course").value.trim();
+
+      if (students.some(student => student.roll.toLowerCase() === roll.toLowerCase())) {
+        alert("This roll number already exists!");
+        return;
+      }
+
+      students.push({ name, roll, course });
+      saveStudents();
+      displayStudents();
+      form.reset();
+    });
+
+    search.addEventListener("input", displayStudents);
+
+    displayStudents();
+  </script>
+</body>
+</html>
